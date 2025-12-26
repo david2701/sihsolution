@@ -1,42 +1,40 @@
 #!/bin/bash
 
 # =============================================================================
-# SIH Solutions CMS - Installation Script
+# SIH Solutions CMS - Docker Installation Script
 # =============================================================================
-# Usage: curl -fsSL https://raw.githubusercontent.com/david2701/sihsolution/main/install.sh | bash
-# Or: ./install.sh
+# Only requires: Docker & Docker Compose
+# Usage: ./install.sh
 # =============================================================================
 
 set -e
 
 echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║           SIH Solutions CMS - Installation                     ║"
+echo "║           SIH Solutions CMS - Docker Installation              ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Check requirements
-check_command() {
-    if ! command -v $1 &> /dev/null; then
-        echo -e "${RED}❌ $1 is required but not installed.${NC}"
-        exit 1
-    fi
-    echo -e "${GREEN}✓ $1 found${NC}"
-}
+# Check Docker only
+if ! command -v docker &> /dev/null; then
+    echo -e "${RED}❌ Docker is required but not installed.${NC}"
+    echo "Install Docker: https://docs.docker.com/get-docker/"
+    exit 1
+fi
+echo -e "${GREEN}✓ Docker found${NC}"
 
-echo ""
-echo "📋 Checking requirements..."
-check_command node
-check_command npm
-check_command docker
-check_command docker-compose
+if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+    echo -e "${RED}❌ Docker Compose is required but not installed.${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ Docker Compose found${NC}"
 
-# Clone if not in the directory
-if [ ! -f "package.json" ] && [ ! -d "backend" ]; then
+# Clone if needed
+if [ ! -f "docker-compose.yml" ]; then
     echo ""
     echo "📥 Cloning repository..."
     git clone https://github.com/david2701/sihsolution.git
@@ -53,74 +51,43 @@ if [ ! -f "backend/.env" ]; then
 fi
 
 if [ ! -f ".env" ]; then
-    cp .env.example .env 2>/dev/null || echo "POSTGRES_PASSWORD=sih_secure_password_2024" > .env
+    echo "POSTGRES_PASSWORD=sih_secure_password_2024" > .env
     echo -e "${GREEN}✓ Created .env${NC}"
 fi
 
-# Start PostgreSQL with Docker
+# Build and start with Docker Compose
 echo ""
-echo "🐘 Starting PostgreSQL database..."
-docker-compose up -d postgres
-sleep 5
-
-# Install backend dependencies
+echo "🐳 Building and starting containers..."
+echo "   This may take a few minutes on first run..."
 echo ""
-echo "📦 Installing backend dependencies..."
-cd backend
-npm install
 
-# Generate Prisma client
+docker-compose -f docker-compose.prod.yml up -d --build
+
+# Wait for services
 echo ""
-echo "🔄 Generating Prisma client..."
-npx prisma generate
+echo "⏳ Waiting for services to start..."
+sleep 15
 
-# Run database migrations
-echo ""
-echo "🗄️ Running database migrations..."
-npx prisma migrate deploy 2>/dev/null || npx prisma migrate dev --name init
-
-# Seed the database
-echo ""
-echo "🌱 Seeding database..."
-npx prisma db seed
-
-cd ..
-
-# Install frontend dependencies
-echo ""
-echo "📦 Installing frontend dependencies..."
-cd frontend
-npm install
-cd ..
-
-# Build frontend
-echo ""
-echo "🏗️ Building frontend..."
-cd frontend
-npm run build
-cd ..
+# Get server IP
+SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || echo "YOUR_IP")
 
 echo ""
 echo "╔════════════════════════════════════════════════════════════════╗"
 echo "║                    ✅ Installation Complete!                    ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""
-echo -e "${GREEN}To start the application (Development):${NC}"
-echo ""
-echo "  1. Start backend:  cd backend && npm run dev"
-echo "  2. Start frontend: cd frontend && npm run dev"
-echo ""
-echo -e "${YELLOW}Or use Docker (Production - Port 8080):${NC}"
-echo ""
-echo "  docker-compose -f docker-compose.prod.yml up -d"
+echo -e "${GREEN}Your CMS is now running!${NC}"
 echo ""
 echo -e "${GREEN}Access:${NC}"
-echo "  🌐 Frontend (Dev):  http://localhost:3000"
-echo "  🌐 Frontend (Prod): http://YOUR_IP:8080"
-echo "  🔧 Admin Panel:     http://YOUR_IP:8080/admin"
-echo "  📚 API Docs:        http://localhost:3001/docs"
+echo "  🌐 Frontend:    http://${SERVER_IP}:8080"
+echo "  🔧 Admin Panel: http://${SERVER_IP}:8080/admin"
 echo ""
 echo -e "${YELLOW}Admin Credentials:${NC}"
 echo "  📧 Email:    admin@sihsolutions.com"
 echo "  🔑 Password: Admin123!"
+echo ""
+echo -e "${YELLOW}Commands:${NC}"
+echo "  View logs:  docker-compose -f docker-compose.prod.yml logs -f"
+echo "  Stop:       docker-compose -f docker-compose.prod.yml down"
+echo "  Restart:    docker-compose -f docker-compose.prod.yml restart"
 echo ""
