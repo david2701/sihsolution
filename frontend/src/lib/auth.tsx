@@ -88,11 +88,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const hasPermission = (permission: string): boolean => {
-        return user?.permissions.includes(permission) ?? false;
+        return user?.permissions?.includes(permission) ?? false;
     };
 
     const hasAnyPermission = (permissions: string[]): boolean => {
-        return permissions.some((p) => user?.permissions.includes(p));
+        if (!user?.permissions) return false;
+        return permissions.some((p) => user.permissions.includes(p));
     };
 
     return (
