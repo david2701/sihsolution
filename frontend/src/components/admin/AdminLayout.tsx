@@ -61,6 +61,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+    // Si estamos en la página de login, mostrar solo los children sin layout
+    const isLoginPage = pathname === '/admin/login';
+
+    if (isLoginPage) {
+        return <>{children}</>;
+    }
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-slate-100 flex items-center justify-center">
