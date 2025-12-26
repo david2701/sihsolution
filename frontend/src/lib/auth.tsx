@@ -76,6 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const data = await res.json();
+        console.log('Login response:', data);
+        console.log('User permissions:', data.user?.permissions);
         setToken(data.token);
         setUser(data.user);
         localStorage.setItem('token', data.token);
