@@ -19,7 +19,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Check Docker only
+# Check Docker
 if ! command -v docker &> /dev/null; then
     echo -e "${RED}❌ Docker is required but not installed.${NC}"
     echo "Install Docker: https://docs.docker.com/get-docker/"
@@ -27,11 +27,16 @@ if ! command -v docker &> /dev/null; then
 fi
 echo -e "${GREEN}✓ Docker found${NC}"
 
-if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+# Detect docker compose command (v1 vs v2)
+if docker compose version &> /dev/null; then
+    COMPOSE_CMD="docker compose"
+elif command -v docker-compose &> /dev/null; then
+    COMPOSE_CMD="docker-compose"
+else
     echo -e "${RED}❌ Docker Compose is required but not installed.${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ Docker Compose found${NC}"
+echo -e "${GREEN}✓ Docker Compose found (using: $COMPOSE_CMD)${NC}"
 
 # Clone if needed
 if [ ! -f "docker-compose.yml" ]; then
@@ -61,7 +66,7 @@ echo "🐳 Building and starting containers..."
 echo "   This may take a few minutes on first run..."
 echo ""
 
-docker-compose -f docker-compose.prod.yml up -d --build
+$COMPOSE_CMD -f docker-compose.prod.yml up -d --build
 
 # Wait for services
 echo ""
@@ -87,7 +92,7 @@ echo "  📧 Email:    admin@sihsolutions.com"
 echo "  🔑 Password: Admin123!"
 echo ""
 echo -e "${YELLOW}Commands:${NC}"
-echo "  View logs:  docker-compose -f docker-compose.prod.yml logs -f"
-echo "  Stop:       docker-compose -f docker-compose.prod.yml down"
-echo "  Restart:    docker-compose -f docker-compose.prod.yml restart"
+echo "  View logs:  $COMPOSE_CMD -f docker-compose.prod.yml logs -f"
+echo "  Stop:       $COMPOSE_CMD -f docker-compose.prod.yml down"
+echo "  Restart:    $COMPOSE_CMD -f docker-compose.prod.yml restart"
 echo ""
