@@ -60,6 +60,10 @@ export default async function authRoutes(fastify: FastifyInstance) {
             include: { permission: true },
         });
 
+        console.log('DEBUG: roleId:', user.roleId);
+        console.log('DEBUG: rolePermissions count:', rolePermissions.length);
+        console.log('DEBUG: permissions:', rolePermissions.map((rp) => rp.permission.name));
+
         const token = fastify.jwt.sign({
             userId: user.id,
             email: user.email,
