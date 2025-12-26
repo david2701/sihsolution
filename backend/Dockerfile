@@ -2,12 +2,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Set npm registry to public
-RUN npm config set registry https://registry.npmjs.org/
+# Set npm registry explicitly
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm cache clean --force
 
-# Install dependencies (including devDependencies for build)
-COPY package*.json ./
-RUN npm ci
+# Install dependencies
+COPY package.json package-lock.json ./
+RUN npm install
 
 # Copy source code
 COPY prisma ./prisma
@@ -25,12 +26,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Set npm registry to public
-RUN npm config set registry https://registry.npmjs.org/
+# Set npm registry
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm cache clean --force
 
 # Copy package files and install production deps only
-COPY package*.json ./
-RUN npm ci --only=production
+COPY package.json package-lock.json ./
+RUN npm install --only=production
 
 # Copy prisma and generate client
 COPY prisma ./prisma

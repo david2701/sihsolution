@@ -75,7 +75,8 @@ echo "🐳 Building and starting containers..."
 echo "   This may take a few minutes on first run..."
 echo ""
 
-$COMPOSE_CMD -f docker-compose.prod.yml up -d --build
+$COMPOSE_CMD -f docker-compose.prod.yml build --no-cache
+$COMPOSE_CMD -f docker-compose.prod.yml up -d
 
 # Wait for services
 echo ""

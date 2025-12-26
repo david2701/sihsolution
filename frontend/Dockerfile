@@ -2,16 +2,17 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Set npm registry to public
-RUN npm config set registry https://registry.npmjs.org/
+# Set npm registry explicitly
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm cache clean --force
 
-# Copy package files
-COPY package*.json ./
+# Copy package files first
+COPY package.json package-lock.json ./
 
-# Install ALL dependencies (including devDependencies for build)
-RUN npm ci
+# Install ALL dependencies
+RUN npm install
 
-# Copy source code (excluding node_modules via .dockerignore)
+# Copy source code
 COPY . .
 
 # Build the application
