@@ -149,7 +149,7 @@ export default function ArticleEditor() {
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
                     <Link
-                        href="/admin/articles"
+                        href="/_/admin/articles"
                         className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />
@@ -317,8 +317,8 @@ export default function ArticleEditor() {
                                         type="button"
                                         onClick={() => toggleTag(tag.id)}
                                         className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${formData.tagIds.includes(tag.id)
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                            ? 'bg-blue-100 text-blue-700'
+                                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                             }`}
                                     >
                                         {tag.name}

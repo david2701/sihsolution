@@ -24,7 +24,7 @@ export default function Header() {
                     <CurrentDate />
                     <div className="flex gap-6 font-medium">
                         <span className="hover:text-accent cursor-pointer transition-colors">S&apos;abonner</span>
-                        <Link href="/admin/login" className="hover:text-accent cursor-pointer transition-colors">Connexion</Link>
+                        <Link href="/_/admin/login" className="hover:text-accent cursor-pointer transition-colors">Connexion</Link>
                     </div>
                 </div>
             </div>

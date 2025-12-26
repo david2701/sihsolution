@@ -92,7 +92,7 @@ export default function ArticlesPage() {
                 </div>
                 {hasPermission('articles.create') && (
                     <Link
-                        href="/admin/articles/new"
+                        href="/_/admin/articles/new"
                         className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                     >
                         <Plus className="w-5 h-5" />
