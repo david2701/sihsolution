@@ -2,14 +2,17 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Use yarn instead of npm (npm has bugs on Alpine)
+# Use yarn with node-modules linker (not PnP)
 RUN corepack enable && corepack prepare yarn@stable --activate
 
-# Install dependencies
+# Copy yarn config and package files
+COPY .yarnrc.yml ./
 COPY package.json package-lock.json ./
-RUN echo "=== Installing with yarn ===" && \
+
+RUN echo "=== Installing with yarn (node-modules mode) ===" && \
     yarn install && \
-    echo "=== node_modules installed ===" && \
+    echo "=== Checking node_modules ===" && \
+    ls -la node_modules/ | head -10 && \
     ls node_modules/.bin/ | head -10
 
 # Copy source code
