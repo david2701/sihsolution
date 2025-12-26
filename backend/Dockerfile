@@ -2,6 +2,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Install OpenSSL for Prisma compatibility
+RUN apk add --no-cache openssl openssl-dev libc6-compat
+
 # Use yarn with node-modules linker (not PnP)
 RUN corepack enable && corepack prepare yarn@stable --activate
 
@@ -9,10 +12,9 @@ RUN corepack enable && corepack prepare yarn@stable --activate
 COPY .yarnrc.yml ./
 COPY package.json package-lock.json ./
 
-RUN echo "=== Installing with yarn (node-modules mode) ===" && \
+RUN echo "=== Installing with yarn ===" && \
     yarn install && \
-    echo "=== Checking node_modules ===" && \
-    ls -la node_modules/ | head -10
+    echo "=== node_modules installed ==="
 
 # Copy source code
 COPY prisma ./prisma
@@ -31,6 +33,9 @@ RUN echo "=== Building ===" && \
 FROM node:20-alpine
 
 WORKDIR /app
+
+# Install OpenSSL for Prisma runtime
+RUN apk add --no-cache openssl libc6-compat
 
 # Copy everything from builder
 COPY --from=builder /app/node_modules ./node_modules
