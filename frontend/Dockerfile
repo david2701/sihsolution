@@ -3,8 +3,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Set npm registry explicitly
-RUN npm config set registry https://registry.npmjs.org/ && \
-    npm cache clean --force
+RUN npm config set registry https://registry.npmjs.org/
 
 # Copy package files first
 COPY package.json package-lock.json ./
@@ -12,8 +11,13 @@ COPY package.json package-lock.json ./
 # Install ALL dependencies
 RUN npm install
 
-# Copy source code
-COPY . .
+# Copy source code individually (NOT node_modules)
+COPY src ./src
+COPY public ./public
+COPY next.config.ts ./
+COPY tsconfig.json ./
+COPY postcss.config.mjs ./
+COPY eslint.config.mjs ./
 
 # Build the application
 RUN npm run build
