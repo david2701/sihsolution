@@ -11,8 +11,8 @@ COPY prisma ./prisma
 COPY src ./src
 COPY tsconfig.json ./
 
-# Generate Prisma client
-RUN npx prisma generate
+# Generate Prisma client (using npm script to use local version)
+RUN npm run db:generate
 
 # Build TypeScript
 RUN npm run build
@@ -28,7 +28,7 @@ RUN npm install --legacy-peer-deps --omit=dev
 
 # Copy prisma and generate client
 COPY prisma ./prisma
-RUN npx prisma generate
+RUN npm run db:generate
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
