@@ -56,7 +56,16 @@ if [ ! -f "backend/.env" ]; then
 fi
 
 if [ ! -f ".env" ]; then
-    echo "POSTGRES_PASSWORD=sih_secure_password_2024" > .env
+    cat > .env << 'EOF'
+POSTGRES_USER=sih_user
+POSTGRES_PASSWORD=sih_secure_password_2024
+POSTGRES_DB=sih_cms
+JWT_SECRET=super_secret_jwt_key_change_in_production_2024
+API_URL=http://api:3001
+FRONTEND_URL=http://localhost:8080
+ADMIN_EMAIL=admin@sihsolutions.com
+ADMIN_PASSWORD=Admin123!
+EOF
     echo -e "${GREEN}✓ Created .env${NC}"
 fi
 
