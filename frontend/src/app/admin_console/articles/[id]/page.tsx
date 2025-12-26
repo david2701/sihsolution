@@ -149,7 +149,7 @@ export default function ArticleEditor() {
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
                     <Link
-                        href="/_/admin/articles"
+                        href="/admin_console/articles"
                         className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />

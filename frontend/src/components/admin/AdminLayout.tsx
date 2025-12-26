@@ -32,26 +32,26 @@ type MenuDivider = { type: 'divider'; label: string };
 type MenuEntry = MenuItem | MenuDivider;
 
 const menuItems: MenuEntry[] = [
-    { href: '/_/admin', icon: LayoutDashboard, label: 'Tableau de bord', permission: null },
+    { href: '/admin_console', icon: LayoutDashboard, label: 'Tableau de bord', permission: null },
     { type: 'divider', label: 'Contenu' },
-    { href: '/_/admin/articles', icon: FileText, label: 'Articles', permission: 'articles.read' },
-    { href: '/_/admin/categories', icon: FolderOpen, label: 'Catégories', permission: 'categories.read' },
-    { href: '/_/admin/pages', icon: FileText, label: 'Pages', permission: 'pages.read' },
-    { href: '/_/admin/videos', icon: Video, label: 'Vidéos', permission: 'videos.read' },
-    { href: '/_/admin/podcasts', icon: Mic, label: 'Podcasts', permission: 'podcasts.read' },
-    { href: '/_/admin/media', icon: Image, label: 'Médias', permission: 'media.read' },
+    { href: '/admin_console/articles', icon: FileText, label: 'Articles', permission: 'articles.read' },
+    { href: '/admin_console/categories', icon: FolderOpen, label: 'Catégories', permission: 'categories.read' },
+    { href: '/admin_console/pages', icon: FileText, label: 'Pages', permission: 'pages.read' },
+    { href: '/admin_console/videos', icon: Video, label: 'Vidéos', permission: 'videos.read' },
+    { href: '/admin_console/podcasts', icon: Mic, label: 'Podcasts', permission: 'podcasts.read' },
+    { href: '/admin_console/media', icon: Image, label: 'Médias', permission: 'media.read' },
     { type: 'divider', label: 'Marketing' },
-    { href: '/_/admin/ads', icon: Megaphone, label: 'Publicités', permission: 'ads.read' },
-    { href: '/_/admin/banners', icon: ImageIcon, label: 'Bannières', permission: 'banners.read' },
-    { href: '/_/admin/newsletter', icon: Mail, label: 'Newsletter', permission: 'newsletter.read' },
-    { href: '/_/admin/contact', icon: MessageSquare, label: 'Messages', permission: 'contact.read' },
+    { href: '/admin_console/ads', icon: Megaphone, label: 'Publicités', permission: 'ads.read' },
+    { href: '/admin_console/banners', icon: ImageIcon, label: 'Bannières', permission: 'banners.read' },
+    { href: '/admin_console/newsletter', icon: Mail, label: 'Newsletter', permission: 'newsletter.read' },
+    { href: '/admin_console/contact', icon: MessageSquare, label: 'Messages', permission: 'contact.read' },
     { type: 'divider', label: 'Administration' },
-    { href: '/_/admin/users', icon: Users, label: 'Utilisateurs', permission: 'users.read' },
-    { href: '/_/admin/roles', icon: Shield, label: 'Rôles', permission: 'roles.read' },
+    { href: '/admin_console/users', icon: Users, label: 'Utilisateurs', permission: 'users.read' },
+    { href: '/admin_console/roles', icon: Shield, label: 'Rôles', permission: 'roles.read' },
     { type: 'divider', label: 'Configuration' },
-    { href: '/_/admin/settings', icon: Settings, label: 'Paramètres', permission: 'settings.read' },
-    { href: '/_/admin/seo', icon: Search, label: 'SEO', permission: 'seo.read' },
-    { href: '/_/admin/footer', icon: Footprints, label: 'Footer', permission: 'footer.read' },
+    { href: '/admin_console/settings', icon: Settings, label: 'Paramètres', permission: 'settings.read' },
+    { href: '/admin_console/seo', icon: Search, label: 'SEO', permission: 'seo.read' },
+    { href: '/admin_console/footer', icon: Footprints, label: 'Footer', permission: 'footer.read' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -62,7 +62,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Si estamos en la página de login, mostrar solo los children sin layout
-    const isLoginPage = pathname === '/_/admin/login';
+    const isLoginPage = pathname === '/admin_console/login';
 
     if (isLoginPage) {
         return <>{children}</>;
@@ -77,13 +77,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     if (!user) {
-        router.push('/_/admin/login');
+        router.push('/admin_console/login');
         return null;
     }
 
     const handleLogout = () => {
         logout();
-        router.push('/_/admin/login');
+        router.push('/admin_console/login');
     };
 
     const filteredMenuItems = menuItems.filter(item => {
