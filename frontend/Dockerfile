@@ -2,19 +2,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy npmrc for registry config
-COPY .npmrc ./
-
-# Copy package files first
+# Install dependencies first
 COPY package.json package-lock.json ./
+RUN npm install --legacy-peer-deps
 
-# Install ALL dependencies (using ci for cleaner installs in Docker)
-RUN npm ci
-
-# Verify next is installed
-RUN ls -la node_modules/.bin/ && which npx && npx next --version
-
-# Copy source code individually (NOT node_modules)
+# Copy source code
 COPY src ./src
 COPY public ./public
 COPY next.config.ts ./
@@ -22,7 +14,7 @@ COPY tsconfig.json ./
 COPY postcss.config.mjs ./
 COPY eslint.config.mjs ./
 
-# Build the application (using npx to avoid PATH issues)
+# Build the application
 RUN npx next build
 
 # Production image
