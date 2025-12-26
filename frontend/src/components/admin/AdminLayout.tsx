@@ -86,11 +86,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         router.push('/admin_console/login');
     };
 
-    const filteredMenuItems = menuItems.filter(item => {
-        if ('type' in item) return true;
-        if (!item.permission) return true;
-        return hasPermission(item.permission);
-    });
+    // Show all menu items - permission check happens at API level
+    const filteredMenuItems = menuItems;
 
     return (
         <div className="min-h-screen bg-slate-100">
