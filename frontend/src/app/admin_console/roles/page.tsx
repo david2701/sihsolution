@@ -49,7 +49,7 @@ export default function RolesPage() {
                         <div className="flex gap-2"><button onClick={closeEdit} className="px-4 py-2 hover:bg-slate-100 rounded-lg">Annuler</button><button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Sauvegarder</button></div>
                     </div>
                     <div className="space-y-6">
-                        {Object.entries(allPermissions.grouped).map(([module, perms]) => (
+                        {Object.entries(allPermissions.grouped || {}).map(([module, perms]) => (
                             <div key={module} className="border rounded-lg p-4">
                                 <div className="flex items-center gap-3 mb-3">
                                     <button onClick={() => toggleModule(perms)} className={`w-5 h-5 rounded border flex items-center justify-center ${perms.every(p => selectedPerms.includes(p.id)) ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'}`}>{perms.every(p => selectedPerms.includes(p.id)) && <Check className="w-3 h-3" />}</button>

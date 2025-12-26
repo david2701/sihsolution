@@ -151,8 +151,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             <div className="flex">
                 {/* Desktop sidebar */}
-                <aside className={`hidden lg:block ${sidebarOpen ? 'w-64' : 'w-20'} bg-slate-900 text-white min-h-screen transition-all duration-300 sticky top-0`}>
-                    <div className="p-4">
+                <aside className={`hidden lg:flex lg:flex-col ${sidebarOpen ? 'w-64' : 'w-20'} bg-slate-900 text-white h-screen transition-all duration-300 sticky top-0 overflow-hidden`}>
+                    <div className="p-4 flex-1 overflow-y-auto">
                         <div className="flex items-center justify-between mb-8">
                             {sidebarOpen && <span className="font-bold text-xl">SIH Solutions</span>}
                             <button

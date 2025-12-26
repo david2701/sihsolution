@@ -239,6 +239,153 @@ async function main() {
         });
     }
 
+    // =============================================
+    // DEMO CONTENT
+    // =============================================
+    console.log('📰 Creating demo categories...');
+    const categories = [
+        { name: 'Politique', slug: 'politique', description: 'Actualités politiques nationales et internationales', image: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=800' },
+        { name: 'Économie', slug: 'economie', description: 'Marchés financiers, entreprises et tendances économiques', image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+        { name: 'Technologie', slug: 'technologie', description: 'Innovations, startups et actualités tech', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800' },
+        { name: 'Sport', slug: 'sport', description: 'Football, basketball, tennis et autres sports', image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800' },
+        { name: 'Culture', slug: 'culture', description: 'Musique, cinéma, art et événements culturels', image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800' },
+    ];
+
+    const createdCategories: { id: string; slug: string }[] = [];
+    for (const cat of categories) {
+        const existing = await prisma.category.findUnique({ where: { slug: cat.slug } });
+        if (!existing) {
+            const created = await prisma.category.create({ data: cat });
+            createdCategories.push({ id: created.id, slug: created.slug });
+        } else {
+            createdCategories.push({ id: existing.id, slug: existing.slug });
+        }
+    }
+
+    // Get admin user for articles
+    const adminUser = await prisma.user.findUnique({
+        where: { email: process.env.ADMIN_EMAIL || 'admin@sihsolutions.com' }
+    });
+
+    if (adminUser) {
+        console.log('📝 Creating demo articles...');
+        const articleTemplates = [
+            { title: 'Les nouvelles réformes gouvernementales', category: 'politique', excerpt: 'Analyse des dernières mesures annoncées par le gouvernement.' },
+            { title: 'Élections régionales : les enjeux', category: 'politique', excerpt: 'Tour d\'horizon des candidats et des programmes.' },
+            { title: 'Relations internationales en mutation', category: 'politique', excerpt: 'Comment les alliances géopolitiques évoluent-elles ?' },
+            { title: 'Le marché boursier en hausse', category: 'economie', excerpt: 'Les indices affichent des gains significatifs cette semaine.' },
+            { title: 'Start-ups : les levées de fonds record', category: 'economie', excerpt: 'L\'écosystème entrepreneurial ne connaît pas la crise.' },
+            { title: 'Inflation : quelles perspectives ?', category: 'economie', excerpt: 'Les économistes partagent leurs prévisions.' },
+            { title: 'L\'IA révolutionne l\'industrie', category: 'technologie', excerpt: 'Comment l\'intelligence artificielle transforme les entreprises.' },
+            { title: 'Cybersécurité : les nouvelles menaces', category: 'technologie', excerpt: 'Les experts alertent sur les vulnérabilités émergentes.' },
+            { title: 'Smartphones 2025 : quoi de neuf ?', category: 'technologie', excerpt: 'Les innovations à attendre cette année.' },
+            { title: 'Victoire historique en finale', category: 'sport', excerpt: 'Un match mémorable qui restera dans les annales.' },
+            { title: 'Transferts : le mercato s\'emballe', category: 'sport', excerpt: 'Les dernières rumeurs et confirmations.' },
+            { title: 'Jeux Olympiques : préparatifs', category: 'sport', excerpt: 'Les athlètes intensifient leur entraînement.' },
+            { title: 'Festival de musique : programmation', category: 'culture', excerpt: 'Les artistes qui enflammeront la scène cet été.' },
+            { title: 'Cinéma : les films à ne pas manquer', category: 'culture', excerpt: 'Notre sélection des sorties du mois.' },
+            { title: 'Exposition exceptionnelle au musée', category: 'culture', excerpt: 'Une rétrospective unique à découvrir.' },
+        ];
+
+        const loremContent = `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+        <h2>Les points clés</h2>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</p>
+        <ul><li>Premier point important</li><li>Deuxième élément à retenir</li><li>Conclusion et perspectives</li></ul>
+        <h2>Analyse approfondie</h2>
+        <p>Sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>`;
+
+        for (let i = 0; i < articleTemplates.length; i++) {
+            const template = articleTemplates[i];
+            const category = createdCategories.find(c => c.slug === template.category);
+            const slug = template.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
+
+            const existing = await prisma.article.findUnique({ where: { slug } });
+            if (!existing && category) {
+                await prisma.article.create({
+                    data: {
+                        title: template.title,
+                        slug,
+                        content: loremContent,
+                        excerpt: template.excerpt,
+                        featuredImage: `https://picsum.photos/seed/${i + 1}/800/400`,
+                        categoryId: category.id,
+                        authorId: adminUser.id,
+                        status: 'PUBLISHED',
+                        publishedAt: new Date(),
+                        views: Math.floor(Math.random() * 5000),
+                    },
+                });
+            }
+        }
+    }
+
+    console.log('🖼️ Creating demo banners...');
+    const banners = [
+        { title: 'Bienvenue sur SIH Solutions', subtitle: 'Votre source d\'actualités de confiance', imageUrl: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200', linkUrl: '/articles', order: 1 },
+        { title: 'Abonnez-vous à notre newsletter', subtitle: 'Restez informé des dernières actualités', imageUrl: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200', linkUrl: '/newsletter', order: 2 },
+        { title: 'Découvrez nos podcasts', subtitle: 'L\'actualité en audio', imageUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=1200', linkUrl: '/podcasts', order: 3 },
+    ];
+
+    for (const banner of banners) {
+        const existing = await prisma.banner.findFirst({ where: { title: banner.title } });
+        if (!existing) {
+            await prisma.banner.create({ data: banner });
+        }
+    }
+
+    console.log('📄 Creating demo pages...');
+    const pages = [
+        { title: 'À propos', slug: 'a-propos', content: '<h1>À propos de SIH Solutions</h1><p>SIH Solutions est votre source d\'actualités fiable et indépendante. Fondé en 2020, nous nous engageons à fournir une information de qualité, vérifiée et accessible à tous.</p><h2>Notre mission</h2><p>Informer, analyser et décrypter l\'actualité pour vous aider à comprendre le monde qui vous entoure.</p><h2>Notre équipe</h2><p>Une équipe de journalistes passionnés et expérimentés, dédiés à l\'excellence éditoriale.</p>', isActive: true, order: 1 },
+        { title: 'Contact', slug: 'contact', content: '<h1>Contactez-nous</h1><p>Nous sommes à votre écoute. N\'hésitez pas à nous contacter pour toute question, suggestion ou collaboration.</p><h2>Email</h2><p>contact@sihsolutions.com</p><h2>Adresse</h2><p>123 Rue de la Presse, 75001 Paris, France</p>', isActive: true, order: 2 },
+        { title: 'Mentions légales', slug: 'mentions-legales', content: '<h1>Mentions légales</h1><p>Conformément aux dispositions de la loi n°2004-575 du 21 juin 2004 pour la confiance en l\'économie numérique.</p><h2>Éditeur</h2><p>SIH Solutions SARL</p><h2>Hébergeur</h2><p>Hébergé en France</p>', isActive: true, order: 3 },
+    ];
+
+    for (const page of pages) {
+        const existing = await prisma.page.findUnique({ where: { slug: page.slug } });
+        if (!existing) {
+            await prisma.page.create({ data: page });
+        }
+    }
+
+    console.log('📺 Creating demo videos...');
+    const videos = [
+        { title: 'L\'interview exclusive', description: 'Rencontre avec les acteurs de l\'actualité', embedCode: '<iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>', thumbnail: 'https://picsum.photos/seed/vid1/400/225', isFeatured: true },
+        { title: 'Le débat de la semaine', description: 'Analyse et confrontation des idées', embedCode: '<iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>', thumbnail: 'https://picsum.photos/seed/vid2/400/225', isFeatured: false },
+    ];
+
+    for (const video of videos) {
+        const existing = await prisma.video.findFirst({ where: { title: video.title } });
+        if (!existing) {
+            await prisma.video.create({ data: { ...video, publishedAt: new Date() } });
+        }
+    }
+
+    console.log('🎙️ Creating demo podcasts...');
+    const podcasts = [
+        { title: 'Le podcast du matin', description: 'Votre briefing quotidien en 10 minutes', embedCode: '<iframe src="https://open.spotify.com/embed/show/example" width="100%" height="232" frameborder="0"></iframe>', coverImage: 'https://picsum.photos/seed/pod1/400/400', duration: 600 },
+        { title: 'Décryptage hebdo', description: 'L\'analyse approfondie de la semaine', embedCode: '<iframe src="https://open.spotify.com/embed/show/example" width="100%" height="232" frameborder="0"></iframe>', coverImage: 'https://picsum.photos/seed/pod2/400/400', duration: 2400 },
+    ];
+
+    for (const podcast of podcasts) {
+        const existing = await prisma.podcast.findFirst({ where: { title: podcast.title } });
+        if (!existing) {
+            await prisma.podcast.create({ data: { ...podcast, publishedAt: new Date() } });
+        }
+    }
+
+    console.log('📢 Creating demo ads...');
+    const ads = [
+        { name: 'Sidebar Ad 1', position: 'sidebar', imageUrl: 'https://picsum.photos/seed/ad1/300/250', linkUrl: 'https://example.com', isActive: true },
+        { name: 'Header Ad', position: 'header', imageUrl: 'https://picsum.photos/seed/ad2/728/90', linkUrl: 'https://example.com', isActive: true },
+    ];
+
+    for (const ad of ads) {
+        const existing = await prisma.ad.findFirst({ where: { name: ad.name } });
+        if (!existing) {
+            await prisma.ad.create({ data: ad });
+        }
+    }
+
     console.log('✅ Seed completed successfully!');
 }
 

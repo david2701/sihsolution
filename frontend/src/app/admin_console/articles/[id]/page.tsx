@@ -12,6 +12,22 @@ import {
     Plus,
 } from 'lucide-react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// Dynamic import to avoid SSR issues with TipTap
+const RichTextEditor = dynamic(() => import('@/components/admin/RichTextEditor'), { ssr: false });
+
+// Utility to generate slug from title
+const slugify = (text: string) => {
+    return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove accents
+        .replace(/[^a-z0-9\s-]/g, '')    // Remove special chars
+        .replace(/\s+/g, '-')            // Replace spaces with -
+        .replace(/-+/g, '-')             // Replace multiple - with single -
+        .trim();
+};
 
 interface Category {
     id: string;
@@ -178,7 +194,15 @@ export default function ArticleEditor() {
                             <input
                                 type="text"
                                 value={formData.title}
-                                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                onChange={(e) => {
+                                    const newTitle = e.target.value;
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        title: newTitle,
+                                        // Auto-generate slug for new articles
+                                        ...(isNew ? { seo: { ...prev.seo, metaTitle: prev.seo.metaTitle || newTitle } } : {})
+                                    }));
+                                }}
                                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Titre de l'article"
                                 required
@@ -188,12 +212,10 @@ export default function ArticleEditor() {
                         {/* Content */}
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                             <label className="block text-sm font-medium text-slate-700 mb-2">Contenu *</label>
-                            <textarea
-                                value={formData.content}
-                                onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[400px]"
-                                placeholder="Contenu de l'article (HTML ou Markdown)"
-                                required
+                            <RichTextEditor
+                                content={formData.content}
+                                onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+                                placeholder="Écrivez le contenu de l'article..."
                             />
                         </div>
 
