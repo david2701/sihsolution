@@ -2,14 +2,17 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Set npm registry explicitly
-RUN npm config set registry https://registry.npmjs.org/
+# Copy npmrc for registry config
+COPY .npmrc ./
 
 # Copy package files first
 COPY package.json package-lock.json ./
 
-# Install ALL dependencies
-RUN npm install
+# Install ALL dependencies (using ci for cleaner installs in Docker)
+RUN npm ci
+
+# Verify next is installed
+RUN ls -la node_modules/.bin/ && which npx && npx next --version
 
 # Copy source code individually (NOT node_modules)
 COPY src ./src
@@ -19,8 +22,8 @@ COPY tsconfig.json ./
 COPY postcss.config.mjs ./
 COPY eslint.config.mjs ./
 
-# Build the application
-RUN npm run build
+# Build the application (using npx to avoid PATH issues)
+RUN npx next build
 
 # Production image
 FROM node:20-alpine AS runner

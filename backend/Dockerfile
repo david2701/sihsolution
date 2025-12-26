@@ -8,7 +8,7 @@ RUN npm config set registry https://registry.npmjs.org/ && \
 
 # Install dependencies
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
 # Copy source code
 COPY prisma ./prisma
@@ -32,7 +32,7 @@ RUN npm config set registry https://registry.npmjs.org/ && \
 
 # Copy package files and install production deps only
 COPY package.json package-lock.json ./
-RUN npm install --only=production
+RUN npm ci --omit=dev
 
 # Copy prisma and generate client
 COPY prisma ./prisma
