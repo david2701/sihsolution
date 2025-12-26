@@ -2,9 +2,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Set npm registry to public
+RUN npm config set registry https://registry.npmjs.org/
+
 # Install dependencies (including devDependencies for build)
 COPY package*.json ./
-COPY .npmrc ./
 RUN npm ci
 
 # Copy source code
@@ -23,7 +25,10 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Set npm registry to public
+RUN npm config set registry https://registry.npmjs.org/
+
+# Copy package files and install production deps only
 COPY package*.json ./
 RUN npm ci --only=production
 
