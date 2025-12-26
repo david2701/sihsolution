@@ -2,7 +2,7 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
+# Install ALL dependencies (including dev)
 COPY package.json package-lock.json ./
 RUN npm install --legacy-peer-deps
 
@@ -11,20 +11,20 @@ COPY prisma ./prisma
 COPY src ./src
 COPY tsconfig.json ./
 
-# Generate Prisma client (using npm script to use local version)
+# Generate Prisma client
 RUN npm run db:generate
 
 # Build TypeScript
 RUN npm run build
 
-# Production image
+# Production image - install everything to avoid issues
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files and install production deps only
+# Install ALL dependencies
 COPY package.json package-lock.json ./
-RUN npm install --legacy-peer-deps --omit=dev
+RUN npm install --legacy-peer-deps
 
 # Copy prisma and generate client
 COPY prisma ./prisma
