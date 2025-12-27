@@ -11,10 +11,36 @@ import { ArrowRight } from "lucide-react";
 // API URL for server-side fetch
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api:3001';
 
-async function getArticles() {
+interface Article {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string;
+  featuredImage?: string;
+  content?: string;
+  publishedAt?: string;
+  createdAt: string;
+  category?: { name: string };
+  author?: { firstName: string; lastName: string };
+}
+
+interface FormattedArticle {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  image: string;
+  excerpt: string;
+  author: string;
+  source: string;
+  readingTime: string;
+  date: string;
+}
+
+async function getArticles(): Promise<Article[]> {
   try {
     const res = await fetch(`${API_URL}/api/articles?status=PUBLISHED&limit=20`, {
-      next: { revalidate: 60 }, // Cache for 60 seconds
+      next: { revalidate: 60 },
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -25,47 +51,7 @@ async function getArticles() {
   }
 }
 
-async function getCategories() {
-  try {
-    const res = await fetch(`${API_URL}/api/categories`, {
-      next: { revalidate: 300 }, // Cache for 5 minutes
-    });
-    if (!res.ok) return [];
-    return await res.json();
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return [];
-  }
-}
-
-async function getBanners() {
-  try {
-    const res = await fetch(`${API_URL}/api/banners`, {
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) return [];
-    return await res.json();
-  } catch (error) {
-    console.error('Error fetching banners:', error);
-    return [];
-  }
-}
-
-async function getVideos() {
-  try {
-    const res = await fetch(`${API_URL}/api/videos`, {
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) return [];
-    return await res.json();
-  } catch (error) {
-    console.error('Error fetching videos:', error);
-    return [];
-  }
-}
-
-// Helper to format article for components
-function formatArticle(article: any) {
+function formatArticle(article: Article): FormattedArticle {
   return {
     id: article.id,
     slug: article.slug,
@@ -81,19 +67,12 @@ function formatArticle(article: any) {
 }
 
 export default async function Home() {
-  // Fetch data from API
-  const [articles, categories, banners, videos] = await Promise.all([
-    getArticles(),
-    getCategories(),
-    getBanners(),
-    getVideos(),
-  ]);
-
-  // Format articles for display
+  const articles = await getArticles();
   const formattedArticles = articles.map(formatArticle);
 
-  // Split articles for different sections
-  const mustReadCenter = formattedArticles[0] || {
+  const defaultArticle: FormattedArticle = {
+    id: '0',
+    slug: 'bienvenue',
     title: "Bienvenue sur SIH Solutions",
     category: "Actualités",
     image: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800",
@@ -104,8 +83,9 @@ export default async function Home() {
     date: "Aujourd'hui"
   };
 
-  const mustReadLeft = formattedArticles[1] || mustReadCenter;
-  const mustReadRight = formattedArticles.slice(2, 4).map(a => ({
+  const mustReadCenter = formattedArticles[0] || defaultArticle;
+  const mustReadLeft = formattedArticles[1] || defaultArticle;
+  const mustReadRight = formattedArticles.slice(2, 4).map((a: FormattedArticle) => ({
     title: a.title,
     category: a.category,
     image: a.image,
@@ -116,7 +96,7 @@ export default async function Home() {
   const latestNews = formattedArticles.slice(0, 4);
   const techStories = formattedArticles.slice(4, 9);
 
-  const opinion = formattedArticles.slice(9, 13).map(a => ({
+  const opinion = formattedArticles.slice(9, 13).map((a: FormattedArticle) => ({
     title: a.title,
     category: a.category,
     author: a.author
@@ -124,11 +104,11 @@ export default async function Home() {
 
   return (
     <div className="bg-white min-h-screen pb-12">
-      <HeroSlider articles={formattedArticles.slice(0, 5)} />
+      {/* HeroSlider fetches its own data */}
+      <HeroSlider />
 
       <Banner />
 
-      {/* MUST READ SECTION */}
       <MustReadSection
         title="À lire absolument"
         leftArticle={mustReadLeft}
@@ -142,42 +122,33 @@ export default async function Home() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-12">
 
-          {/* --- LEFT COLUMN (MAIN CONTENT) --- */}
           <div className="lg:w-3/4 space-y-12">
-
-            {/* Section: Latest News */}
-            <LatestNewsSection articles={latestNews.length > 0 ? latestNews : [{ title: "Aucun article", category: "Info", image: "", excerpt: "Revenez bientôt pour voir les dernières actualités.", date: "Aujourd'hui", source: "SIH", readingTime: "1 min" }]} />
+            <LatestNewsSection articles={latestNews.length > 0 ? latestNews : [{ title: "Aucun article", category: "Info", image: "", excerpt: "Revenez bientôt.", date: "Aujourd'hui", source: "SIH", readingTime: "1 min" }]} />
 
             <Banner />
 
-            {/* Section: Tech & Science */}
             <ScienceTechSection
               title="Science et Technologie"
-              articles={techStories.length > 0 ? techStories : [{ title: "À venir", excerpt: "Contenu technologique à venir.", category: "Tech", image: "", author: "SIH", date: "Bientôt", source: "SIH", readingTime: "1 min" }]}
+              articles={techStories.length > 0 ? techStories : [{ title: "À venir", excerpt: "", category: "Tech", image: "", author: "SIH", date: "", source: "SIH", readingTime: "1 min" }]}
               moreLink="/category/technologie"
             />
-
           </div>
 
-          {/* --- RIGHT COLUMN (SIDEBAR) --- */}
           <div className="lg:w-1/4 space-y-12">
-
-            {/* Sidebar: Opinion */}
             <section>
               <h3 className="text-xl font-serif font-bold mb-4 border-b-2 border-slate-900 pb-2">Opinion</h3>
               <div className="space-y-4">
-                {(opinion.length > 0 ? opinion : [{ title: "À venir", category: "Opinion", author: "Rédaction" }]).map((op, idx) => (
+                {(opinion.length > 0 ? opinion : [{ title: "À venir", category: "Opinion", author: "Rédaction" }]).map((op: { title: string; category: string; author: string }, idx: number) => (
                   <NewsCard key={idx} mode="minimal" {...op} />
                 ))}
               </div>
             </section>
 
-            {/* Sidebar: Trending Widget */}
             <section className="bg-slate-50 p-6 rounded-lg border border-slate-100">
               <h3 className="text-xl font-serif font-bold mb-6 text-red-700">Les plus lus</h3>
               <div className="flex flex-col gap-6">
-                {formattedArticles.slice(0, 5).map((article, idx) => (
-                  <Link key={idx} href={`/article/${article.slug}`} className="flex gap-4 items-start group cursor-pointer">
+                {formattedArticles.slice(0, 5).map((article: FormattedArticle, idx: number) => (
+                  <Link key={article.id} href={`/article/${article.slug}`} className="flex gap-4 items-start group cursor-pointer">
                     <span className="text-4xl font-black text-slate-200 leading-none group-hover:text-red-200 transition-colors">{idx + 1}</span>
                     <p className="font-serif font-bold leading-snug group-hover:text-red-700 transition-colors">{article.title}</p>
                   </Link>
@@ -185,11 +156,9 @@ export default async function Home() {
               </div>
             </section>
 
-            {/* Sidebar Ad */}
             <div className="w-full h-[600px] bg-gray-100 flex items-center justify-center text-gray-400 text-sm uppercase tracking-widest border border-gray-200">
               Publicité
             </div>
-
           </div>
 
         </div>
@@ -197,7 +166,6 @@ export default async function Home() {
 
       <Banner />
 
-      {/* Full Width Featured Article */}
       {formattedArticles[0] && (
         <section className="relative w-full h-[500px] flex items-center my-12 group overflow-hidden">
           <div className="absolute inset-0">
@@ -220,9 +188,8 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Videos Section */}
-      <VideoSection videos={videos} />
-
+      {/* VideoSection fetches its own data */}
+      <VideoSection />
     </div>
   );
 }
